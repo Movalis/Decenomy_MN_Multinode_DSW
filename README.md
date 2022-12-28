@@ -1,85 +1,134 @@
-![Example-Logo](https://avatars.githubusercontent.com/u/74193190?v=4)
+![Logo](https://cdn.discordapp.com/attachments/1057646100225462303/1057680243198001303/Decenomy_multinode_guide.png)
 
-# __Decenomy__ Masternode Setup Guide
+# FLS MN Multinode Setup Guide (Ubuntu 20.04)
+***
 ***
 ## Required
-1) **__DSW__ collateral value at current block** ([consult the collateral table](../../README.md#rewards-breakdown))
-2) **Local Wallet https://github.com/decenomy/DSW/releases**
-3) **VPS with UBUNTU 18.04** (it is possible to work on other versions but it is not tested)
+1) **FLS collateral value at current block** ([consult the collateral table](https://github.com/decenomy/FLS#rewards-breakdown))
+2) **Local Wallet** ([download wallet](https://github.com/decenomy/FLS/releases/latest))
+3) **VPS with UBUNTU 20.04**
 4) **Putty https://www.putty.org/**
 5) **Text editor on your local pc to save data for copy/paste**
 ***
+***
 
-***On your Local Wallet***
-* Create an address with a label MN1 and send exactly the collateral amount to it ([consult the collateral table](../../README.md#rewards-breakdown)). Wait to complete 6 confirmations on “ Payment to yourself “ created.
+### ***On your Local Wallet***
+* Create an address with the label MN1 and send exactly the collateral amount valid at the current block to it ([consult the collateral table](https://github.com/decenomy/FLS#rewards-breakdown)). Wait to complete 6 confirmations on “ Payment to yourself “ created.
 
-* Open the Debug Console ( Tools – Debug Console ) and type ***createmasternodekey***.
-You will then receive your private key, save it in a txt to use it later.
+* Open the Debug Console ( Settings – Debug - Console ) and type ***createmasternodekey***.
+You will then receive your masternode private key, and save it in a *.txt to use later.
   ```
   Example:
           createmasternodekey
           w8723KqiiqtiLH6y2ktjfwzuSrNucGAbagpmTmCn1KnNEeQTJKf
-* Still at Debug Console type ***getmasternodeoutputs*** and save txhash and outputidx on a txt
+* Still at Debug Console type ***getmasternodeoutputs*** and save txhash and outputidx on a txt to use it later.
   ```
   Example:
           "txhash" : "12fce79c1a5623aa5b5830abff1a9feb6a682b75ee9fe22c647725a3gef42saa",
 		         "outputidx" : 0
 
-***On Putty***
+* Repeat this process according to the number of masternodes you want to deploy, just label them differently, MN2, MN3, and so on.
 
-* Once logged in your vps, *copy/paste* each line one by one with *Enter*
+* Do not close your wallet window at this point.
 
-```
-wget -q https://raw.githubusercontent.com/__GITHUB_ACCOUNT__/__GITHUB_REPOSITORY__/master/contrib/masternodesetup/masternodesetup.sh
-```
-
-```
-bash masternodesetup.sh
-```
-
-* Let this run, and when it ask you to install dependencies, if you're not sure press ***y*** and then enter
-
-* It will take some time and then will ask to compile the Daemon, press ***y*** and then enter 
-
-* Last thing script will ask you is to provide Masternode Genkey. Copy the one you got previously (createmasternodekey) and press enter.
-
-Remember to do `__decenomy__-cli getblockcount` to check if VPS catching blocks till it synced with chain, if not follow this procedure:
-
-* Go to your wallet-qt and check peers list (tools - peers list) and select one ip from the list. With that ip do the follow command at VPS `__decenomy__-cli addnode "ip" onetry`
-
-      Example:
-		  __decenomy__-cli addnode 45.32.144.158 onetry
-    
-* Check now if VPS already downloading blocks with the command `__decenomy__-cli getblockcount`, and if yes give it time now to catch last block number 
-
-Do not close your terminal/ command prompt window at this point.
-
-***Go back to your Local Wallet***
-
-* Open the Masternode Configuration file (tools – open masternode configuration file) and add a new line (without #) using this template (bold needs to be changed) in the final save it and close the editor
-
-**ALIAS VPS_IP**:__PORT_MAINNET__ **masternodeprivkey TXhash Output**
-
-		Example:
-		MN1 125.67.32.10:__PORT_MAINNET__ w8723KqiiqtiLH6y2ktjfwzuSrNucGAbagpmTmCn1KnNEeQTJKf 12fce79c1a5623aa5b5830abff1a9feb6a682b75ee9fe22c647725a3gef42saa 0
-
-* Close and Re-open Local Wallet, and at Masternode Tab you will find your MN with status MISSING
-
-***(For the next steps you need to have already 16 confirmation on “Payment to yourself “ created in first step)***
-
-* Go to Debug Console type the following: ***startmasternode alias 0 (mymnalias)***
-
-		Example:
-		startmasternode alias 0 MN1
 ***
 
-***Go back to Putty***
+### ***On Putty***
 
-```
-__decenomy__-cli getmasternodestatus
-```
+* Once logged in to your VPS, *copy/paste* each line one by one with *Enter*
 
-You need to get **"status" : 4** 
+	`wget -q https://raw.githubusercontent.com/Movalis/Decenomy_MN_Multinode/main/multinode.sh`
 
-## Congratulations your __Decenomy__ node it's running
+	`bash multinode.sh`
 
+
+	Let the script run until you see a similar screen like this
+
+![Logo](https://cdn.discordapp.com/attachments/1057646100225462303/1057666832967946361/DSW_Multinode_script.png)
+
+   Remember to do `flits-cli getinfo` to check if VPS synced with the chain
+
+* To add masternodes to the multinode feature we need to add the alias and masternodeprivkey to the new activemasternode.conf file generated by this script
+
+	To do that we can easily use this template (bold needs to be changed) command for each masternode we want to add:
+
+	echo **alias** **activemasternodeprivkey** >> .flits/activemasternode.conf
+	
+		Guide:
+		ALIAS             = The label you create for the masternode address on your Local Wallet
+		masternodeprivkey = value you got after preformed the command createmasternodekey, previously done on your Local Wallet
+   
+ 	Final look at how the command should look ( as an example )
+   
+		echo MN1 w8723KqiiqtiLH6y2ktjfwzuSrNucGAbagpmTmCn1KnNEeQTJKf >> .flits/activemasternode.conf
+
+	To review what we already introduce in activemasternode.conf we can do 
+
+		cat .flits/activemasternode.conf
+
+	![Logo](https://cdn.discordapp.com/attachments/1057646100225462303/1057666866681757696/cat_activemasternode.png)
+		
+	In case we need to edit the file activemasternode.conf we can do
+
+		nano .flits/activemasternode.conf
+
+* After we introduce all the masternodeprivkey we need to restart the service, for that, we need to do
+
+	`systemctl restart flits.service`
+
+   
+	Do not close your terminal/ command prompt window at this point.
+
+***
+
+### ***Go back to your Local Wallet***
+
+* Open the Masternode Configuration file by clicking in the correspondent icon ( top right wallet icons ) 
+
+![Logo](https://cdn.discordapp.com/attachments/1057646100225462303/1057649522936922242/DSW_masternode_conf.png)
+
+and add a new line in it (without #) using this template (bold needs to be changed) in the final save it and close the editor
+
+**ALIAS VPS_IP**:32972 **masternodeprivkey TXhash Output**
+
+	Guide:
+	ALIAS             = The label you create for the masternode address
+	VPS_IP            = You can catch this value from the script screen above
+	masternodeprivkey = value you got after preformed the command createmasternodekey, previously done
+	TXhash            = value you got after preformed the command getmasternodeoutputs, previously done on the line "txhash" :
+	Output            = value you got after preformed the command getmasternodeoutputs, previously done on the line "outputidx" :
+
+
+   Final look at how mastenode.conf file should look ( as an example )
+   
+	# Masternode config file
+	# Format: alias IP:port masternodeprivkey collateral_output_txid collateral_output_index
+	# Example: mn1 127.0.0.2:32972 93HaYBVUCYjEMeeH1Y4sBGLALQZE1Yc1K64xiqgX37tGBDQL8Xg 2bcd3c84c84f87eaa86e4e56834c92927a07f9e18718810b92e0d0324456a67c 0#
+	MN1 125.67.32.10:32972 w8723KqiiqtiLH6y2ktjfwzuSrNucGAbagpmTmCn1KnNEeQTJKf 12fce79c1a5623aa5b5830abff1a9feb6a682b75ee9fe22c647725a3gef42saa 0
+	
+   Repeat this process according to the others masternodes you want to deploy ( as an example )
+
+	# Masternode config file
+	# Format: alias IP:port masternodeprivkey collateral_output_txid collateral_output_index
+	# Example: mn1 127.0.0.2:32972 93HaYBVUCYjEMeeH1Y4sBGLALQZE1Yc1K64xiqgX37tGBDQL8Xg 2bcd3c84c84f87eaa86e4e56834c92927a07f9e18718810b92e0d0324456a67c 0#
+	MN1 125.67.32.10:32972 w8723KqiiqtiLH6y2ktjfwzuSrNucGAbagpmTmCn1KnNEeQTJKf 12fce79c1a5623aa5b5830abff1a9feb6a682b75ee9fe22c647725a3gef42saa 0
+	MN2 125.67.32.10:32972 wehrndhfyiqtiLH6y2ktjfwzuSrNucGAbagpmTmCn1KnNEeedsfg 43ere77c1a5623aa5b5830abff1a9feb6a682b75ee9fe22c647725a3gef42sww 1
+
+* Close and Re-open Local Wallet, let it sync, and at Masternodes Tab you will find your MN with the status MISSING
+
+	
+***(For the next steps you need to have already 16 confirmations on “Payment to yourself “ created in the first step)***
+
+
+* Go to Debug Console and type the following:
+
+    `startmasternode all false`
+***
+
+### ***Go back to Putty***
+
+   `flits-cli getmasternodestatus`
+
+You need to get **"status" : 4**
+
+## Congratulations your Flits multinode service is running now
